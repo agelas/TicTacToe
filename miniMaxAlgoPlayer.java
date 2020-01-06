@@ -8,15 +8,13 @@ public class miniMaxAlgoPlayer {
 
         ArrayList testMax = new ArrayList<Integer>();
         testMax.add(1);
-        testMax.add(3);
 
         ArrayList testMin = new ArrayList<Integer>();
-        testMin.add(2);
-        testMin.add(4);
+        testMin.add(5);
 
         miniMaxAI ai = new miniMaxAI();
         ai.passPositionsIn(testMax, testMin);
-        ai.findBestMove();
+        ai.findBestMove(testMax, testMin);
 
     }
 }
@@ -36,11 +34,11 @@ class miniMaxAI {
     private ArrayList minimizingPlayerPositionList;
     private ArrayList possiblePositionsList;
 
-    public int findBestMove() {
+    public int findBestMove(ArrayList maximizingPlayerPositions, ArrayList minimizingPlayerPositions) {
         ArrayList evals = new ArrayList<Integer>();
         for (int i = 0; i < possiblePositionsList.size(); i++) {
-            evals.add(i, minimax((Integer) possiblePositionsList.get(i), 4, true));
-            //reset(maximizingPlayerPositions, minimizingPlayerPositions);
+            evals.add(i, minimax(possiblePositionsList, (Integer) possiblePositionsList.get(i), 3, true));
+            reset(maximizingPlayerPositions, minimizingPlayerPositions);
         }
         System.out.println(evals);
         //so find all values that have a 1 and choose between them?
@@ -51,49 +49,57 @@ class miniMaxAI {
         this.maximizingPlayerPositionList = maximizingPlayerPositions;
         this.minimizingPlayerPositionList = minimizingPlayerPositions;
 
-        //this.maximizingPlayerPossiblePositionList = findAvailable(maximizingPlayerPositions);
-        //this.minimizingPlayerPossiblePositionList = findAvailable(minimizingPlayerPositions);
-
         this.possiblePositionsList = findAvailable(maximizingPlayerPositions, minimizingPlayerPositions);
     }
 
-    private int minimax(int position, int depth, boolean maximizingPlayer) {
-        //System.out.println(depth);
+    private int minimax(ArrayList possibleList, int position, int depth, boolean maximizingPlayer) {
+        System.out.println(depth);
+        System.out.println(possibleList);
         String result = checkWinner();
+
+        int lDepth = depth;
+
         if (depth == 0 || result.length() > 0) { //this is where you get an eval back
+            System.out.println("bailing: " + depth);
             if (result.equals("Player 1 wins!")) {
                 return 1;
             } else if (result.equals("Player 2 wins!")) {
                 return -1;
             }
-            else if (result.equals("Tie")) {
+            else { //Tie
                 return 0;
             }
-            else {
-                return 5;
-            }
         }
+
+        ArrayList newPossibleList = possibleList;
+        newPossibleList.remove(position);
 
         if (maximizingPlayer) {
             int maxEval = -100;
             //for each child
-            for (Object o : possiblePositionsList) {
+            System.out.println(possibleList);
+            for (Object o : possibleList) {
                 int pos = (Integer) o;
-                this.maximizingPlayerPositionList.add(pos); //idk if this is right
-                int eval = minimax(pos, depth - 1, false);
+                System.out.println("cpu");
+                //this.maximizingPlayerPositionList.add(pos); //idk if this is right
+                int eval = minimax(newPossibleList, pos, (lDepth - 1), false);
                 maxEval = max(maxEval, eval);
             }
+            System.out.println("bailingMax");
             return maxEval;
         }
         else {
             int minEval = 100;
             //for each child
-            for (Object o : possiblePositionsList) {
+            System.out.println(possibleList);
+            for (Object o : possibleList) {
                 int pos = (Integer) o;
-                this.minimizingPlayerPositionList.add(pos); //also don't know if this is right
-                int eval = minimax(pos, depth - 1, true);
+                System.out.println("human");
+                //this.minimizingPlayerPositionList.add(pos); //also don't know if this is right
+                int eval = minimax(newPossibleList, pos, (lDepth - 1), true);
                 minEval = min(minEval, eval);
             }
+            System.out.println("bailingMin");
             return minEval;
         }
     }
@@ -127,9 +133,7 @@ class miniMaxAI {
 
         ArrayList availableRet = new ArrayList();
 
-        for (int j = 0; j < arrayRep.length; j++) {
-            availableRet.add(arrayRep[j]);
-        }
+        Collections.addAll(availableRet, arrayRep); //convert HashSet to a list
 
         return availableRet;
     }
@@ -171,24 +175,16 @@ class miniMaxAI {
     private void reset(ArrayList initialMaxPlayerPositions, ArrayList initialMinPlayerPositions) {
         this.maximizingPlayerPositionList = initialMaxPlayerPositions;
         this.minimizingPlayerPositionList = initialMinPlayerPositions;
+        //this.possiblePositionsList = findAvailable(initialMaxPlayerPositions, initialMinPlayerPositions);
     }
 
     private int max(int in1, int in2) {
-        if(in1 > in2) {
-            return in1;
-        } else {
-            return in2;
-        }
+        return Math.max(in1, in2);
         //can make this random in case in1 == in2
     }
 
     private int min(int in1, int in2) {
-        if(in1 < in2) {
-            return in1;
-        }
-        else {
-            return in2;
-        }
+        return Math.min(in1, in2);
     }
 }
 
