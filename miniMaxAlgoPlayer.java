@@ -40,7 +40,7 @@ class miniMaxAI {
         ArrayList evals = new ArrayList<Integer>();
         for (int i = 0; i < possiblePositionsList.size(); i++) {
             System.out.println("EVALUATING " + possiblePositionsList.get(i));
-            evals.add(i, minimax(possiblePositionsList, possiblePositionsList.get(i), 3, true));
+            evals.add(i, minimax(possiblePositionsList, this.maximizingPlayerPositionList, this.minimizingPlayerPositionList, possiblePositionsList.get(i), 5, true));
             //reset(maximizingPlayerPositions, minimizingPlayerPositions);
         }
         System.out.println(evals);
@@ -55,24 +55,24 @@ class miniMaxAI {
         this.possiblePositionsList = findAvailable(maximizingPlayerPositions, minimizingPlayerPositions);
     }
 
-    private int minimax(ArrayList<Integer> possibleList, Object position, int depth, boolean maximizingPlayer) {
-        System.out.println(depth);
+    private int minimax(ArrayList<Integer> possibleList, ArrayList<Integer> maxList, ArrayList<Integer> minList, Object position, int depth, boolean maximizingPlayer) {
+        System.out.println("DEPTH: " + depth);
         //System.out.println(possibleList);
 
         ArrayList newPossibleList = new ArrayList<>(possibleList);
-        ArrayList maximizingPlayerListIteration = new ArrayList<Integer>(this.maximizingPlayerPositionList);
-        ArrayList minimizingPlayerListIteration = new ArrayList<Integer>(this.minimizingPlayerPositionList);
+        ArrayList maximizingPlayerListIteration = new ArrayList<Integer>(maxList);
+        ArrayList minimizingPlayerListIteration = new ArrayList<Integer>(minList);
 
         if (maximizingPlayer) {
-            maximizingPlayerListIteration.add(position);
+            maximizingPlayerListIteration.add(position); //these are not flowing downstream
             newPossibleList.remove(position);
         } else {
-            minimizingPlayerListIteration.add(position);
+            minimizingPlayerListIteration.add(position); //and this too
             newPossibleList.remove(position);
         }
         String result = checkWinner(maximizingPlayerListIteration, minimizingPlayerListIteration);
 
-        if (depth == 0 || result.length() > 0) { //this is where you get an eval back
+        if (depth == 0 || result.length() > 1) { //this is where you get an eval back
             //System.out.println("bailing: " + lDepth);
             if (result.equals("Player 1 wins!")) {
                 System.out.println("hit p1");
@@ -93,12 +93,10 @@ class miniMaxAI {
         if (maximizingPlayer) {
             int maxEval = -100;
             //for each child
-            //System.out.println(possibleList);
-            for (Object o : possibleList) {
-                //System.out.println("cpu");
+            for (Object o : newPossibleList) {
                 //this.maximizingPlayerPositionList.add(pos); //idk if this is right
-                int eval = minimax(newPossibleList, o, depth - 1, false);
-                depth++;
+                int eval = minimax(newPossibleList, maximizingPlayerListIteration, minimizingPlayerListIteration, o, depth - 1, false);
+                //depth++; //ok but why
                 maxEval = max(maxEval, eval);
             }
             //System.out.println("bailingMax");
@@ -108,12 +106,11 @@ class miniMaxAI {
             int minEval = 100;
             //for each child
             //System.out.println(possibleList);
-            for (Object o : possibleList) {
-                Object pos = o;
+            for (Object o : newPossibleList) {
                 //System.out.println("human");
                 //this.minimizingPlayerPositionList.add(pos); //also don't know if this is right
-                int eval = minimax(newPossibleList, pos, depth - 1, true);
-                depth++;
+                int eval = minimax(newPossibleList, maximizingPlayerListIteration,minimizingPlayerListIteration, o, depth - 1, true);
+                //depth++; //But I ask again, why
                 minEval = min(minEval, eval);
             }
             //System.out.println("bailingMin");
@@ -176,7 +173,6 @@ class miniMaxAI {
         winningConditions.add(cross2);
 
         for (List l : winningConditions) {
-            //System.out.println("size: " + (playerPositions.size() + cpuPositions.size()));
             if (maximizingList.containsAll(l)) {
                 return "Player 1 wins!";
             } else if (minimizingList.containsAll(l)) {
