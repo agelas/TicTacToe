@@ -7,17 +7,17 @@ public class TicTacToeGame {
         ticTacGameEngine tt = new ticTacGameEngine();
         tt.playGame();
     }
-
 }
 
 class ticTacGameEngine {
-    public static List<Integer> player1Positions = new ArrayList<>();
-    public static List<Integer> player2Positions = new ArrayList<>();
+    private static List<Integer> player1Positions = new ArrayList<>();
+    private static List<Integer> player2Positions = new ArrayList<>();
 
     void playGame() {
         boolean keepPlaying = true;
         int player1Wins = 0;
         int player2Wins = 0;
+        int ties = 0;
 
         while (keepPlaying) {
             int winner = setup();
@@ -25,11 +25,13 @@ class ticTacGameEngine {
                 player1Wins++;
             } else if (winner == 2) {
                 player2Wins++;
+            } else {
+                ties++;
             }
-            //and then if tie do nothing
 
-            System.out.println("Player 1 has won " + player1Wins + " times");
-            System.out.println("Player 2 has won " + player2Wins + " times");
+            System.out.println("Player 1 has won " + player1Wins + " time(s)");
+            System.out.println("Player 2 has won " + player2Wins + " time(s)");
+            System.out.println("Players tied: " + ties + " time(s)");
 
             String response;
             Scanner userInput = new Scanner(System.in);
@@ -44,7 +46,7 @@ class ticTacGameEngine {
         }
     }
 
-    private int setup() { //might modify to return something
+    private int setup() {
 
         player1Positions.clear();
         player2Positions.clear();
@@ -64,6 +66,9 @@ class ticTacGameEngine {
         System.out.println("Who goes first (User/CPU)?");
         String firstMover = scan1.next();
         System.out.println(firstMover);
+        Scanner cpuPlayer = new Scanner(System.in);
+        System.out.println("Would you like to play against Random/miniMax CPU?");
+        String choice = cpuPlayer.next();
 
         if (firstMover.equals("User")) {
             System.out.println("You are player 1");
@@ -82,7 +87,7 @@ class ticTacGameEngine {
                     }
                 }
 
-                cpuMove(gameBoard, cpu);
+                cpuMove(gameBoard, choice, cpu);
                 printGameBoard(gameBoard);
                 result = checkWinner();
                 if (result.length() > 0) {
@@ -102,7 +107,7 @@ class ticTacGameEngine {
             cpu = "player1";
 
             while (true) {
-                cpuMove(gameBoard, cpu);
+                cpuMove(gameBoard, choice, cpu);
                 printGameBoard(gameBoard);
                 String result = checkWinner();
                 if (result.length() > 0) {
@@ -232,12 +237,39 @@ class ticTacGameEngine {
      * @param gameBoard The board.
      * @param player Whether its player1 or player2.
      */
-    private static void cpuMove(char[][] gameBoard, String player) {
+    private static void randMove(char[][] gameBoard, String player) {
         Random rand = new Random();
         int cpuPos = rand.nextInt(9) + 1;
         while (player1Positions.contains(cpuPos) || player2Positions.contains(cpuPos)) {
             cpuPos = rand.nextInt(9) + 1;
         }
         placePiece(gameBoard, cpuPos, player);
+    }
+
+    private static void miniMaxMove(char[][] gameBoard, String player) {
+        miniMaxAI mmAI = new miniMaxAI();
+        int move;
+        if (player.equals("player1")) {
+            move = mmAI.makeMove((ArrayList<Integer>) player1Positions, (ArrayList<Integer>) player2Positions);
+        } else {
+            move = mmAI.makeMove((ArrayList<Integer>) player2Positions, (ArrayList<Integer>) player1Positions);
+        }
+        System.out.println("Move: " + move);
+        placePiece(gameBoard, move, player);
+
+    }
+
+    /**
+     * Method that returns the move either made by random or by miniMax. 
+     * @param gameBoard pointer to the board.
+     * @param option Random/miniMax.
+     * @param player player1 or player2.
+     */
+    private static void cpuMove(char[][] gameBoard, String option, String player) {
+        if (option.equals("Random")) {
+            randMove(gameBoard, player);
+        } else if (option.equals("miniMax")) {
+            miniMaxMove(gameBoard, player);
+        }
     }
 }
