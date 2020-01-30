@@ -260,7 +260,7 @@ class ticTacGameEngine {
     }
 
     /**
-     * Method that returns the move either made by random or by miniMax. 
+     * Method that returns the move either made by random or by miniMax.
      * @param gameBoard pointer to the board.
      * @param option Random/miniMax.
      * @param player player1 or player2.
